@@ -3,14 +3,23 @@ pipeline {
 
     environment {
         // Define variables for the build process
-        GITHUB_REPO = "<https://github.com/AhmedFadel0393/material-ui.git>"
+        GITHUB_REPO = "https://github.com/AhmedFadel0393/material-ui.git"
         RECIPIENTS = "developer@example.com" // Replace with actual email
+        GIT_USER_NAME = "AhmedFadel0393"
+        GIT_USER_EMAIL = "ahmed.fadel0393@gmail.com"
     }
 
     stages {
+        stage('Increase Git Buffer Size') {
+            steps {
+                // Increase the Git buffer size to 500MB to handle large fetches
+                sh 'git config --global http.postBuffer 524288000'
+            }
+        }
+
         stage('Checkout Code') {
             steps {
-                // Checkout the code from your GitHub repo
+                // Checkout the code from the GitHub repo
                 git branch: 'main', credentialsId: 'github-token', url: "${GITHUB_REPO}"
             }
         }
@@ -50,13 +59,13 @@ pipeline {
         stage('Push to GitHub') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    // Configure Git and push changes back to GitHub
+                    // Configure Git user details using environment variables and push changes back to GitHub
                     sh '''
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins CI"
+                        git config user.email "${GIT_USER_EMAIL}"
+                        git config user.name "${GIT_USER_NAME}"
                         git add .
                         git commit -m "Automated Build & Test - New Version"
-                        git push <https://$GITHUB_TOKEN@github.com/AhmedFadel0393/material-ui.git>
+                        git push https://$GITHUB_TOKEN@github.com/AhmedFadel0393/material-ui.git
                     '''
                 }
             }
